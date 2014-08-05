@@ -1,0 +1,59 @@
+apply plugin: "eclipse"
+apply plugin: "idea"
+apply plugin: "java"
+apply plugin: "maven"
+
+
+
+repositories {
+   mavenLocal()
+   mavenCentral()
+   maven { url "https://github.com/steffenschaefer/gwt-gradle-plugin/raw/maven-repo/" }
+   
+   maven { url "https://oss.sonatype.org/content/repositories/snapshots/"  }
+   maven { url "https://oss.sonatype.org/content/repositories/releases/"  }
+}
+
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+
+version = "1.0"
+group = "net.failco.gdx.http"
+ext {
+    appName = "gdx-http"
+    gdxVersion = "1.2.0"
+
+
+}
+
+
+sourceSets {
+    main {
+	java { srcDirs = ['src']}
+	resources {
+	    srcDirs = ['src']
+	}
+    }
+}
+
+task sourcesJar(type:Jar){
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {  archives sourcesJar  }
+
+
+dependencies {
+    compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+}
+
+
+
+
+
+tasks.eclipse.doLast {
+    delete ".project"
+}

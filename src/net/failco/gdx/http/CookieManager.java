@@ -2,11 +2,13 @@
 package net.failco.gdx.http;
 
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Net.HttpRequest;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
@@ -34,11 +36,13 @@ public class CookieManager {
 
 	private final Array<Cookie> cookies = new Array<Cookie>();
 
-	/** Scratch {@link Date} for comparing expiration dates. */
-	private transient final Date now = new Date();
+	private final CookieParser parser = new CookieParser();
 
-	private transient final Json json = new Json();
-	private transient final JsonReader jsonReader = new JsonReader();
+	/** Scratch {@link Date} for comparing expiration dates. */
+	private final Date now = new Date();
+
+	private final Json json = new Json();
+	private final JsonReader jsonReader = new JsonReader();
 
 	/**
 	 * 
@@ -133,10 +137,12 @@ public class CookieManager {
 	}
 
 	/** Builds the String formatted to be placed in the HTTP header when sending requests
+	 * @param uri the URI that the HTTP request is being sent to
 	 * 
 	 * @return */
-	public String getHeaderPayload () {
+	public String getHeaderPayload (URI uri) {
 
+		now.setTime(TimeUtils.millis());
 		stringer.setLength(0);
 		Iterator<Cookie> it = cookies.iterator();
 
@@ -147,8 +153,9 @@ public class CookieManager {
 				it.remove();
 				continue;
 			}
-			now.setTime(TimeUtils.millis());
-			stringer.append(cookie.name).append('=').append(cookie.value);
+			if (CookieRules.isCookieValid(cookie, uri)) {
+				stringer.append(cookie.name).append('=').append(cookie.value);
+			}
 			if (it.hasNext()) {
 				stringer.append(seperator);
 			}
@@ -172,12 +179,11 @@ public class CookieManager {
 		return (cookies.size == 0);
 	}
 
-	/** @param headerCookiePayload the cookie as supplied by the HTTP Set-Cookie header */
-	public void registerSetCookieHeader (String headerCookiePayload) {
+	/** @param headerCookiePayload the cookie as supplied by the HTTP Set-Cookie header
+	 * @param sourceUri uri */
+	protected void registerSetCookieHeader (String headerCookiePayload, URI sourceUri) {
 		Gdx.app.log("CookieManager header", headerCookiePayload);
-		// note the space in the regex
-
-		Cookie cookie = Cookie.parse(headerCookiePayload);
+		Cookie cookie = parser.createCookieByHeader(headerCookiePayload, sourceUri);
 		if (cookie != null) {
 			addCookie(cookie);
 		}
@@ -204,7 +210,10 @@ public class CookieManager {
 
 	@Override
 	public String toString () {
-		return getHeaderPayload();
+		stringer.setLength(0);
+		stringer.append("CookieManager: ").append(cookies.toString());
+		return stringer.toString();
+
 	}
 
 }

@@ -28,6 +28,10 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 	 * meaning it will not be serialized. This mirrors browser behavior when cookie expirations are not set. */
 	public Date expiration;
 
+	public String path;
+
+	public boolean secure;
+
 	/** Enforce using factory methods */
 	private Cookie () {
 
@@ -49,21 +53,7 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 
 	}
 
-	private void parseAndSetAttribute (String[] keyVal) {
-		// silently ignore malformed or unrecognized attributes
-		if (keyVal.length < 2) {
-			return;
-		}
-		// can't switch on Strings in 1.6
-		final String key = keyVal[0];
 
-		if ("expires".equalsIgnoreCase(key)) {
-			setExpiration(keyVal[1]);
-		} else if ("domain".equalsIgnoreCase(key)) {
-			domain = (keyVal[1].length() > 0) ? keyVal[1] : null;
-		}
-
-	}
 
 	@Override
 	public String toString () {
@@ -74,28 +64,16 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 		if (domain != null) {
 			ret += "; " + "domain=" + domain;
 		}
+		if (path != null) {
+			ret += "; " + "path=" + path;
+		}
+		if (path != null) {
+			ret += "; " + "path=" + path;
+		}
 		return ret;
 	}
 
-	public static Cookie parse (final String cookieHeader) {
-		// Cookie cookie = Pools.obtain(Cookie.class);
-		String[] keyValPairs = cookieHeader.split("; ?");
-		// first cookie key-val pair is always name=value
-		String keyVal[] = keyValPairs[0].split("=");
-		Cookie cookie = Cookie.obtain(keyVal[0], keyVal[1]);
 
-		// after name=value, grab and check other key-value attributes
-		for (int i = 1; i < keyValPairs.length; i++) {
-			keyVal = keyValPairs[i].split("=");
-			if (keyVal.length < 2) {
-				continue;
-			}
-
-			cookie.parseAndSetAttribute(keyVal);
-
-		}
-		return cookie;
-	}
 
 	/** Obtains a cookie instance from the pool, assigning the given cookie name and value
 	 * @param name
@@ -139,6 +117,8 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 		json.writeValue("value", value);
 		if (domain != null) json.writeValue("domain", domain);
 		if (expiration != null) json.writeValue("expiration", expiration.getTime());
+		if (path != null) json.writeValue("path", path);
+		if (secure) json.writeValue("secure", Boolean.TRUE);
 
 	}
 
@@ -149,10 +129,11 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 		this.value = jsonData.getString("value");
 
 		this.domain = jsonData.getString("domain", null);
+		this.path = jsonData.getString("path", null);
+		this.secure = jsonData.getBoolean("secure", false);
 
 		long dateTimestamp = jsonData.getLong("expiration", -1);
-		if (dateTimestamp > 0) {
-
+		if (dateTimestamp >= 0) {
 			this.expiration = new Date(dateTimestamp);
 
 		} else {
@@ -168,6 +149,8 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 		result = prime * result + ((domain == null) ? 0 : domain.hashCode());
 		result = prime * result + ((expiration == null) ? 0 : expiration.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
+		result = prime * result + (secure ? 1231 : 1237);
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
@@ -205,6 +188,16 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 		} else if (!name.equals(other.name)) {
 			return false;
 		}
+		if (path == null) {
+			if (other.path != null) {
+				return false;
+			}
+		} else if (!path.equals(other.path)) {
+			return false;
+		}
+		if (secure != other.secure) {
+			return false;
+		}
 		if (value == null) {
 			if (other.value != null) {
 				return false;
@@ -214,5 +207,7 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 		}
 		return true;
 	}
+
+
 
 }

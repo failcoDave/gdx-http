@@ -4,6 +4,7 @@
 
 package net.failco.gdx.http;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -27,9 +28,12 @@ public class HttpClient {
 	CookieManager cookieMgr;
 
 	public void sendHttpRequest (HttpRequest httpRequest, HttpResponseListener httpResponseListener) {
+		
 
+		URI uri = URI.create(httpRequest.getUrl());
+		
 		if (cookieMgr != null && !cookieMgr.isEmpty()) {
-			String tempCookie = cookieMgr.getHeaderPayload();
+			String tempCookie = cookieMgr.getHeaderPayload(uri);
 			httpRequest.setHeader(HeaderFields.COOKIE, tempCookie);
 			Gdx.app.log("Outgoing request cookie:", tempCookie);
 		}
@@ -40,7 +44,7 @@ public class HttpClient {
 			}
 		}
 		// Listener instantiation below...
-		Gdx.net.sendHttpRequest(httpRequest, new ResponseWrapper(httpResponseListener));
+		Gdx.net.sendHttpRequest(httpRequest, new ResponseWrapper(httpResponseListener, uri));
 	}
 
 	/** Sets the value for the given field, which will be sent on every subsequent request.
@@ -71,9 +75,11 @@ public class HttpClient {
 
 	private final class ResponseWrapper implements HttpResponseListener {
 		private final HttpResponseListener listener;
+		private final URI sourceUri;
 
-		public ResponseWrapper (HttpResponseListener listener) {
+		public ResponseWrapper (HttpResponseListener listener, URI targetURI) {
 			this.listener = listener;
+			this.sourceUri = targetURI;
 		}
 
 		@Override
@@ -83,7 +89,7 @@ public class HttpClient {
 				Map<String, List<String>> list = httpResponse.getHeaders();
 				List<String> cookieStrings = list.get("Set-Cookie");
 				for (String cookie : cookieStrings) {
-					cookieMgr.registerSetCookieHeader(cookie);
+					cookieMgr.registerSetCookieHeader(cookie, sourceUri);
 				}
 				cookieMgr.save();
 			}
@@ -105,11 +111,19 @@ public class HttpClient {
 		}
 	};
 
-	/** Convenience class for some common HTTP Header field names
+	/** Convenience class for some common HTTP Header field names.  
 	 * @author David Hull */
 	public static class HeaderFields {
 		public static final String COOKIE = "Cookie";
 		public static final String USER_AGENT = "User-Agent";
+		
+		public static final String ACCEPT = "Accept";
+		public static final String ACCEPT_CHARSET = "Accept-Charset";
+		
+		public static final String CONTENT_TYPE = "Content-Type";
+		public static final String DATE = "Date";
+		
+		
 
 	}
 

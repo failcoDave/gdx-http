@@ -22,8 +22,8 @@ import com.badlogic.gdx.utils.ObjectMap.Entries;
 import com.badlogic.gdx.utils.ObjectMap.Entry;
 import com.badlogic.gdx.utils.StringBuilder;
 
-/** TODO WRITE ME!!!
- * 
+/** 
+ * Handles the storage and management of cookies.
  * @author David Hull */
 public class CookieManager {
 
@@ -37,30 +37,16 @@ public class CookieManager {
 	private final Array<Cookie> cookies = new Array<Cookie>();
 
 	private final CookieParser parser = new CookieParser();
+	private final CookieRules rules = new CookieRules();
 
 	/** Scratch {@link Date} for comparing expiration dates. */
 	private final Date now = new Date();
 
 	private final Json json = new Json();
 	private final JsonReader jsonReader = new JsonReader();
-
-	/**
-	 * 
-	 */
-	private final String domain;
-
-	public CookieManager () {
-		domain = null;
-		load();
-
-	}
-
-	public CookieManager (String domain) {
-
-		this.domain = domain;
-		load();
-
-	}
+	
+	
+	
 
 	/** Loads cookies from Preferences */
 	public void load () {
@@ -81,7 +67,7 @@ public class CookieManager {
 				if (cookie.expiration != null && cookie.expiration.after(now)) this.cookies.add(cookie);
 
 			}
-			Gdx.app.log("Loaded Cookies:", this.cookies.toString());
+			
 
 		}
 
@@ -110,8 +96,6 @@ public class CookieManager {
 
 		}
 		json.writeArrayEnd();
-
-		Gdx.app.log("Json TEST", writer.toString());
 		Preferences prefs = Gdx.app.getPreferences(PREF_FILE_NAME);
 		prefs.putString(COOKIE_ENTRY_PREF_KEY, writer.toString());
 		prefs.flush();
@@ -153,7 +137,7 @@ public class CookieManager {
 				it.remove();
 				continue;
 			}
-			if (CookieRules.isCookieValid(cookie, uri)) {
+			if (rules.isCookieValid(cookie, uri)) {
 				stringer.append(cookie.name).append('=').append(cookie.value);
 			}
 			if (it.hasNext()) {
@@ -181,8 +165,7 @@ public class CookieManager {
 
 	/** @param headerCookiePayload the cookie as supplied by the HTTP Set-Cookie header
 	 * @param sourceUri uri */
-	protected void registerSetCookieHeader (String headerCookiePayload, URI sourceUri) {
-		Gdx.app.log("CookieManager header", headerCookiePayload);
+	protected void registerSetCookieHeader (String headerCookiePayload, URI sourceUri) {		
 		Cookie cookie = parser.createCookieByHeader(headerCookiePayload, sourceUri);
 		if (cookie != null) {
 			addCookie(cookie);
@@ -190,7 +173,7 @@ public class CookieManager {
 
 	}
 
-	private void addCookie (Cookie cookie) {
+	public void addCookie (Cookie cookie) {
 		if (cookie == null) throw new IllegalArgumentException("cookie cannot be null");
 		// if a cookie with the given name already exists, replace it with the
 		// new one

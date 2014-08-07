@@ -14,7 +14,7 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Pool;
 
-/** Represents a single cookie, including the name-value pair, specified domain, and expiration date.
+/** Represents a single cookie, including the name-value pair, specified domain, path, and expiration date.
  * 
  * @author David Hull */
 public class Cookie implements Pool.Poolable, Json.Serializable {
@@ -47,33 +47,11 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 			return true;
 
 		} catch (ParseException e) {
-			Gdx.app.error("Cookie", "Cannot parse expiration date: " + dateString);
+			Gdx.app.error("Cookie", "Cannot parse expiration date: " + dateString + ".  Ignoring");
 			return false;
 		}
 
 	}
-
-
-
-	@Override
-	public String toString () {
-		String ret = name + "=" + value;
-		if (expiration != null) {
-			ret += "; " + "expires=" + cookieDateFormat.format(expiration);
-		}
-		if (domain != null) {
-			ret += "; " + "domain=" + domain;
-		}
-		if (path != null) {
-			ret += "; " + "path=" + path;
-		}
-		if (path != null) {
-			ret += "; " + "path=" + path;
-		}
-		return ret;
-	}
-
-
 
 	/** Obtains a cookie instance from the pool, assigning the given cookie name and value
 	 * @param name
@@ -95,20 +73,6 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 		expiration = null;
 
 	}
-
-	public static void free (Cookie cookie) {
-		pool.free(cookie);
-
-	}
-
-	private static final Pool<Cookie> pool = new Pool<Cookie>() {
-
-		@Override
-		protected Cookie newObject () {
-			return new Cookie();
-		}
-
-	};
 
 	@Override
 	public void write (Json json) {
@@ -208,6 +172,35 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 		return true;
 	}
 
+	@Override
+	public String toString () {
+		String ret = name + "=" + value;
+		if (expiration != null) {
+			ret += "; " + "expires=" + cookieDateFormat.format(expiration);
+		}
+		if (domain != null) {
+			ret += "; " + "domain=" + domain;
+		}
+		if (path != null) {
+			ret += "; " + "path=" + path;
+		}
+		if (path != null) {
+			ret += "; " + "path=" + path;
+		}
+		return ret;
+	}
 
+	public static void free (Cookie cookie) {
+		pool.free(cookie);
 
+	}
+
+	private static final Pool<Cookie> pool = new Pool<Cookie>() {
+
+		@Override
+		protected Cookie newObject () {
+			return new Cookie();
+		}
+
+	};
 }

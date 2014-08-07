@@ -8,12 +8,12 @@ import java.net.URI;
 
 /** Helper class for cookie-related checks
  * @author David Hull */
-public class CookieRules {
+class CookieRules {
 	/** Checks to see if given URI is eligible to be sent given cookie
 	 * @param cookie
 	 * @param uri
 	 * @return */
-	public static boolean isCookieValid (Cookie cookie, URI uri) {
+	public boolean isCookieValid (Cookie cookie, URI uri) {
 		if (!uri.getHost().contains(cookie.domain)) return false;
 		if (!isPathValid(cookie, uri)) return false;
 		if (cookie.secure && !uri.getScheme().equalsIgnoreCase("https"))
@@ -23,7 +23,7 @@ public class CookieRules {
 
 	}
 
-	private static boolean isPathValid (Cookie cookie, URI uri) {
+	private boolean isPathValid (Cookie cookie, URI uri) {
 		// If the URI path is null, make sure no path is specified in the cookie, or the path is '/'
 		final String uriPath = uri.getPath();
 		if (uriPath == null || uriPath.equals("/")) {

@@ -15,18 +15,14 @@ import com.badlogic.gdx.Net.HttpResponseListener;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Entry;
 
-/** TODO WRITE ME!!!
- * 
- * Does NOT support multi-threading
+/** Default Implementation for {@link HttpClient}. Automatically builds and loads the {@link CookieManager} instance.
  * 
  * @author David Hull */
 public class DefaultHttpClient implements HttpClient {
 
 	private final ObjectMap<String, String> headerFields = new ObjectMap<String, String>();
 
-	/**
-	 * May be null
-	 */
+	/** May be null */
 	CookieManager cookieMgr;
 
 	public DefaultHttpClient () {
@@ -49,7 +45,7 @@ public class DefaultHttpClient implements HttpClient {
 		if (cookieMgr != null && !cookieMgr.isEmpty()) {
 			String tempCookie = cookieMgr.getHeaderPayload(uri);
 			httpRequest.setHeader(HttpClient.HeaderFields.COOKIE, tempCookie);
-			
+
 		}
 		if (headerFields.size > 0) {
 			for (Entry<String, String> entry : headerFields.entries()) {
@@ -116,7 +112,7 @@ public class DefaultHttpClient implements HttpClient {
 		@Override
 		public void handleHttpResponse (HttpResponse httpResponse) {
 
-			if (cookieMgr != null) {				
+			if (cookieMgr != null) {
 				List<String> cookieStrings = httpResponse.getHeaders().get("Set-Cookie");
 				if (cookieStrings != null) {
 					for (String cookie : cookieStrings) {
@@ -125,7 +121,6 @@ public class DefaultHttpClient implements HttpClient {
 					cookieMgr.save();
 				}
 			}
-			
 
 			listener.handleHttpResponse(httpResponse);
 

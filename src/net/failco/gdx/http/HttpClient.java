@@ -3,8 +3,13 @@ package net.failco.gdx.http;
 import com.badlogic.gdx.Net.HttpRequest;
 import com.badlogic.gdx.Net.HttpResponseListener;
 
-/** A wrapper for HTTP requests that sends user-defined headers to every request and intercepts response headers before passing the
- * server response to the callback.
+/**
+ * An executor for GDX {@link HttpRequest}s. Allows clients to set http headers to be automatically
+ * attached to outgoing {@Link HttpRequest}s.  Intercepts responses and checks for cookies, which, if appropriate,
+ * will be attached to the next request.
+ *
+ * See also {@link CookieManager}
+ *
  * @author David Hull */
 public interface HttpClient {
 

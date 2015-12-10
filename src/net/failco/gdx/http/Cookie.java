@@ -74,6 +74,8 @@ public class Cookie implements Pool.Poolable, Json.Serializable {
 		value = null;
 		domain = null;
 		expiration = null;
+		path = null;
+		secure = false;
 	}
 
 	@Override

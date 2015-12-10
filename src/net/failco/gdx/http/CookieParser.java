@@ -1,7 +1,3 @@
-/**
- * 
- */
-
 package net.failco.gdx.http;
 
 import java.net.URI;
@@ -30,9 +26,7 @@ class CookieParser {
 				}
 				continue;
 			}
-
 			parseAndSetAttribute(cookie, keyVal);
-
 		}
 
 		if (cookie.domain == null) {
@@ -40,17 +34,13 @@ class CookieParser {
 		}
 		if (cookie.path == null) {
 			cookie.path = sourceUri.getPath();
-
 		}
 		return cookie;
-
 	}
 
 	private void parseAndSetAttribute (Cookie cookie, String[] keyVal) {
 		// silently ignore malformed or unrecognized attributes
-		if (keyVal.length < 2) {
-			return;
-		}
+		if (keyVal.length < 2) { return; }
 		// can't switch on Strings in 1.6
 		final String key = keyVal[0];
 
